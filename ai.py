@@ -21,7 +21,7 @@ print("Loading models...")
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    for model in ["andite/anything-v4.0"]:
+    for model in ["andite/anything-v4.0","katakana/2D-Mix"]:
         pipe = StableDiffusionPipeline.from_pretrained(model, torch_dtype=torch.float16)
         pipe = pipe.to("cuda")
         pipe.safety_checker = lambda images, clip_input: (images, False)
