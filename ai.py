@@ -3,7 +3,6 @@ import torch
 import requests
 from io import BytesIO
 import warnings
-import random
 import time
 import json
 import base64
