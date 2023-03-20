@@ -13,7 +13,7 @@ print(f"Identifying as worker")
 
 pipes = {}
 
-apiURL = "http://localhost:3504/worker"
+apiURL = "http://192.168.4.50:3504/worker"
 
 print("Loading models...")
 
@@ -34,9 +34,11 @@ print("Ready!")
 
 def generate(prompt, steps= 50):
     print(f"Generating prompt [{prompt['jobID']}] with model {prompt['model']}")
-
+    if ("sample" in prompt):
+        steps = prompt["sample"]
+    print(steps, prompt)
     pipe = pipes[prompt['model']]
-    image = pipe(prompt['prompt'], num_inference_steps=steps, negative_prompt="").images[0]
+    image = pipe(prompt['prompt'], num_inference_steps=int(steps), negative_prompt="").images[0]
     
     image_io = BytesIO()
     image.save(image_io, format="PNG")
