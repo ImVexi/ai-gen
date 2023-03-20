@@ -1,0 +1,125 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Halfmoon/1.0.4/css/halfmoon.min.css" />
+
+    <style>
+    @media only screen and (max-width: 768px) {
+        .mobile {
+            display: block !important;
+        }
+        .desktop {
+            display: none !important;
+        }
+    }
+
+    @media only screen and (min-width: 768px) {
+        .desktop {
+            display: block !important;
+        }
+        .mobile {
+            display: none !important;
+        }
+    }
+    </style>
+
+    <title>AI Generator</title>
+    <meta property="og:title" content="AI Generator" />
+    <meta property="og:site_name" content="AirplaneGobrr" />
+    <meta property="og:image" content="/static/sundress_cropped.png" />
+    <meta property="og:description" content="Forever Free AI Generated" />
+    <meta property="og:locale" content="en_US" />
+
+</head>
+
+<body class="with-custom-webkit-scrollbars with-custom-css-scrollbars dark-mode text-center">
+    <form class="m-auto w-three-quarter">
+    <h1>AI Generator</h1>
+    <h4>XYZ and counting...</h4>
+    <div class="form-group">
+        <select class="form-control" id="model" required="required">
+            <option value="andite/anything-v4.0">andite/anything-v4.0</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <input class="form-control" maxlength="77" id="prompt" placeholder="Describe the image that you want to generate in a few words"></input>
+    </div>
+
+    </form>
+    <h4 id="queue_info" display="none"></h4><br>
+    <button class="btn btn-primary" id="generate_button" onclick="send_prompt();">Generate</button>
+    <br><br>
+
+    <img width="100%" id="generated_image" style="display: block; border-style: solid; border-width: 3px; display: none; max-width: 512px; margin-left: auto; margin-right: auto;" />
+    <h6>Some code srced from Madeline</h6>
+</body>
+
+<script>
+    var queue_item = null;
+
+    function send_prompt() {
+        document.title = `AI Generator - Working`
+        var p = encodeURIComponent(document.getElementById("prompt").value);
+        var m = encodeURIComponent(document.getElementById("model").value);
+
+        fetch(`/generate?prompt=${p}&model=${m}`).then(function(res) {
+            return res.json()
+        }).then(function(data) {
+            if (data.status == "QUEUED") {
+                queue_item = data;
+            }
+
+            set_queue(data);
+        })
+
+        document.getElementById("generate_button").style.display = "none";
+        document.getElementById("generated_image").style.display = "none";
+        document.getElementById("queue_info").style.display = "inline-block";
+        document.getElementById("queue_info").innerHTML = `...`;
+    }
+
+    setInterval(function() {
+        if (queue_item != null && queue_item.status != "FINISHED" && queue_item.status != "ERROR") {
+            fetch(`/queue/${queue_item.id}`).then(function(res) {
+                return res.json()
+            }).then(function(data) {
+                queue_item = data;
+                set_queue(queue_item);
+            })
+        }
+    }, 2000)
+
+    function set_image(id) {
+        document.getElementById("generated_image").src = `/image/${id}`;
+    }
+
+    function set_queue(queue_item) {
+        if (queue_item.status == "ERROR") {
+            document.getElementById("queue_info").style.display = "inline-block";
+            document.getElementById("queue_info").innerHTML = queue_item.message;
+            document.getElementById("generate_button").style.display = "inline-block";
+            document.getElementById("generated_image").style.display = "none";
+        }
+        else if (queue_item.status == "FINISHED") {
+            document.getElementById("queue_info").style.display = "none";
+            document.getElementById("generate_button").style.display = "inline-block";
+            document.getElementById("generated_image").style.display = "block";
+            set_image(queue_item.id);
+            document.title = `AI Generator - Done!`
+        }
+        else if (queue_item.position > 0) {
+            document.getElementById("queue_info").style.display = "inline-block";
+            document.getElementById("queue_info").innerHTML = `Waiting in queue... (${queue_item.position})`;
+            document.getElementById("generate_button").style.display = "none";
+            document.getElementById("generated_image").style.display = "none";
+            document.title = `AI Generator - ${queue_item.position}`
+        }
+        else {
+            document.getElementById("queue_info").style.display = "inline-block";
+            document.getElementById("queue_info").innerHTML = `Generating image...`;
+            document.getElementById("generate_button").style.display = "none";
+            document.getElementById("generated_image").style.display = "none";
+            document.title = `AI Generator - Working`
+        }
+    }
+</script>
