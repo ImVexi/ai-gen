@@ -9,11 +9,11 @@ const db = new dbBuilder()
 
 const worker_api = express.Router()
 
-worker_api.get("/get", async (req, res)=>{
+worker_api.get("/get", async (req, res) => {
     const line = await db.get(`line`)
-    if (!line) return res.json({ready: false})
+    if (!line) return res.json({ ready: false })
     const next = line.shift()
-    if (next){
+    if (next) {
         await db.set("line", line)
         const lineData = await db.get(`inLine`)
         const nextData = lineData[next]
@@ -27,19 +27,19 @@ worker_api.get("/get", async (req, res)=>{
             sample: nextData.sample
         })
     } else {
-        return res.json({ready: false})
+        return res.json({ ready: false })
     }
 })
 
-worker_api.post("/done/:id", async (req, res)=>{
+worker_api.post("/done/:id", async (req, res) => {
     // console.log(req.body)
     if (req.body && req.body.image) {
-        const data = await db.get(`inLine.${req.params.id}`)
+        var data = await db.get(`inLine.${req.params.id}`) ?? {}
         data.status = "FINISHED"
         await db.set(`inLine.${req.params.id}`, data)
         var imgb64 = Buffer.from(req.body.image, "base64")
         var dir = `imgs/${data.username}`
-        if (!fs.existsSync(dir)){
+        if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
         fs.writeFileSync(`${dir}/${req.params.id}.png`, imgb64)
@@ -53,31 +53,34 @@ app.use(bodyParser.json({
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use("/worker", worker_api)
 
-app.use((req, res, next)=>{
-    var ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress 
+app.use((req, res, next) => {
+    var ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress).replace("::ffff:", "")
     console.log(`${ip} ${decodeURI(req.url)}`)
+    req.rIP = ip
     next()
 })
 
-app.get("/", (req, res)=>{
-    res.sendFile(__dirname+"/index.html")
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/index.html")
 })
 
-app.get("/queue/:id", async (req, res)=>{
+app.get("/queue/:id", async (req, res) => {
     //console.log(req.params.id)
     const lineData = await db.get(`inLine.${req.params.id}`)
     const line = await db.get("line")
     res.json({
         status: lineData?.status ?? "N/A",
         id: req.params.id,
-        position: line.indexOf(req.params.id)+1,
-        username: lineData.username
+        position: line?.indexOf(req.params.id) + 1,
+        username: lineData?.username
     })
 })
 
-app.get("/generate", async (req, res)=>{
+app.get("/generate", async (req, res) => {
     // console.log(req.query)
     var ID = utils.generateUUID()
+    if (req.query.username == "" || req.query.username == null) req.query.username = "public"
+    req.query.username ??= "public"
     await db.set(`inLine.${ID}`, {
         prompt: req.query.prompt,
         model: req.query.model,
@@ -88,22 +91,23 @@ app.get("/generate", async (req, res)=>{
     await db.push(`line`, ID)
     const line = await db.get("line")
     res.json({
-        status:"QUEUED",
+        status: "QUEUED",
         id: ID,
-        position: line.indexOf(ID)+1,
+        position: line.indexOf(ID) + 1,
         username: req.query.username
     })
 })
 
-app.get("/image/:id", async (req, res)=>{
-    if (!req.query.username) res.sendFile(path.join(__dirname, "imgs", "public", req.params.id+".png")); else {
-        res.sendFile(path.join(__dirname, "imgs", req.query.username, req.params.id+".png"))
+app.get("/image/:id", async (req, res) => {
+    if (!req.query.username) res.sendFile(path.join(__dirname, "imgs", "public", req.params.id + ".png")); else {
+        res.sendFile(path.join(__dirname, "imgs", req.query.username, req.params.id + ".png"))
     }
 })
 
-app.get("/all/:user", async (req, res)=>{
-    const files = fs.readdirSync(`imgs/${req.params.user}`)
-    var html = `
+app.get("/all/:user", async (req, res) => {
+    try {
+        const files = fs.readdirSync(`imgs/${req.params.user}`)
+        var html = `
     <style>
     .grid-container {
         display: grid;
@@ -112,17 +116,27 @@ app.get("/all/:user", async (req, res)=>{
     </style>
     <div class="grid-container">
     `
-    
-    for (var file of files){
-        var rawName = file.replace(".png", "")
-        var allData = await db.get(`inLine.${rawName}`)
-        html += `<div><center><h1>${allData.prompt}</h1><img src="/image/${rawName}?username=${req.params.user}" style=""></center></div>`
-    }
 
-    html += "</div>"
-    res.send(html)
+        for (var file of files) {
+            var rawName = file.replace(".png", "")
+            var allData = {}
+            if (await db.has(`inLine.${rawName}`)) allData = await db.get(`inLine.${rawName}`)
+            html += `<div><center><h1>${allData?.prompt ?? ""}</h1><img src="/image/${rawName}?username=${req.params.user}" style=""></center></div>`
+        }
+
+        html += "</div>"
+        res.send(html)
+    } catch (e) {
+        res.send("error")
+    }
 })
 
-app.listen(3504, ()=>{
+app.listen(3504, () => {
     console.log("Running http://localhost:3504")
 })
+
+setInterval(async () => {
+    var q = await db.get("line")
+    if (!q) return
+    console.log(`Quene is ${q.length} long!`)
+}, 5000)
