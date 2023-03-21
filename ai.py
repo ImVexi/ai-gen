@@ -102,7 +102,7 @@ def generate(steps=50, jobID=None, model=None, prompt="Error", imgs=1):
         image.save(image_io, format="PNG")
         image_io.seek(0)
         data = image_io.read()
-        asyncio.run(makeRequest("upload", fileData=data, jobID=currentJobID, number=imageIndex))
+        makeRequest("upload", fileData=data, jobID=currentJobID, number=imageIndex)
 
     print(f"Finished generating prompt [{jobID}]")
     
