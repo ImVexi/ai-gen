@@ -27,7 +27,7 @@ eWS.getWss().on("connection", (ws, msg)=>{
     })
 })
 
-app.use(bodyParser.json({limit: "5mb"})); // for parsing application/json
+app.use(bodyParser.json({limit: "100mb"})); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
 app.engine('hbs', hbs.express3())
@@ -43,17 +43,23 @@ worker_api.post("/add", async (req, res) => {
 
 worker_api.post("/upload", async (req, res) => {
     console.log(req.body)
-    if (req.body && req.body.image && req.body.jobID) {
+    if (req.body && (req.body.image || req.body.images) && req.body.jobID) {
         var jobID = req.body.jobID
         var data = await db.get(`inLine.${jobID}`) ?? {}
+        
+        for (var b64ImgIndex in req.body.images){
+            var b64Img = req.body.images[b64ImgIndex]
+            var imgb64 = Buffer.from(b64Img, "base64")
+            var dir = `imgs/${data.username}`
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
+            fs.writeFileSync(`${dir}/${jobID}-${b64ImgIndex}.png`, imgb64)
+        }
+        
+
         data.status = "FINISHED"
         await db.set(`inLine.${jobID}`, data)
-        var imgb64 = Buffer.from(req.body.image, "base64")
-        var dir = `imgs/${data.username}`
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-        fs.writeFileSync(`${dir}/${jobID}-${req.body.number}.png`, imgb64)
     }
     res.send("ok.")
 })

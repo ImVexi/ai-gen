@@ -112,14 +112,13 @@
 
     function set_image(id, username) {
         document.getElementById("generated_images").innerHTML= "Loading..."
-        setTimeout(()=>{
-            document.getElementById("generated_images").innerHTML= ""
-            for (let i = 0; i < queue_item.count; i++) {
-                var img = document.createElement("img")
-                img.src = `/image/${id}-${i}?username=${username}`
-                document.getElementById("generated_images").append(img)
-            }
-        }, (queue_item.count*1000) / 500)
+        
+        document.getElementById("generated_images").innerHTML= ""
+        for (let i = 0; i < queue_item.count; i++) {
+            var img = document.createElement("img")
+            img.src = `/image/${id}-${i}?username=${username}`
+            document.getElementById("generated_images").append(img)
+        }
     }
 
     function set_queue(queue_item) {
