@@ -93,6 +93,7 @@ def generate(steps=50, jobID=None, model=None, prompt="Error", imgs=1):
     warnings.simplefilter("ignore")
     pipe = StableDiffusionPipeline.from_pretrained(model, torch_dtype=torch.float16)
     pipe = pipe.to("cuda")
+    pipe.safety_checker = lambda images, clip_input: (images, False) # Allows NSFW!!
     
     images = pipe(prompt, num_inference_steps=int(steps), callback=progress_function, num_images_per_prompt=int(imgs) or 1).images
     for imageIndex,image in enumerate(images):
@@ -113,8 +114,8 @@ while True:
     print("Checking")
     try:
         jsonO = makeRequest("get")
-        print(jsonO)
-        print(jsonO["jobID"])
+        # print(jsonO)
+        # print(jsonO["jobID"])
         if "jobID" in jsonO:
             currentJobID = jsonO["jobID"]
             generate(steps=jsonO["sample"] or 50, jobID=currentJobID, model=jsonO["model"] or "andite/anything-v4.0", prompt=jsonO["prompt"] or "Error", imgs=jsonO["imgs"] or 1)
