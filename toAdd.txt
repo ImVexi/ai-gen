@@ -1,0 +1,55 @@
+AbyssOrangeMix 2 (anime) by WarriorMama777
+Analog Diffusion (general) by wavymulder
+Anything 3.0 (anime) by Linaqruf
+Anything 4.0 (anime) by andite
+Basil Mix (general) by nuigurumi
+BloodOrangeMix (anime) by WarriorMama777
+DH ClassicAnime (anime) by DucHaiten
+Deliberate (general) by XpucT
+Disco Diffusion Style by sd-dreambooth-library
+Double Exposure Diffusion by joachimsallstrom
+DreamShaper (painting) by Lykon
+DucHaitenAnime (anime) by DucHaiten
+DucHaitenDarkside (general) by DucHaiten
+DucHaitenDreamWorld (anime) by DucHaiten
+Eimis Anime Diffusion (anime) by eimiss
+ElyOrangeMix (anime) by WarriorMama777
+Emoji Diffusion by valhalla
+Epîc Diffusion 1.0 (general) by johnslegers
+Epîc Diffusion 1.1 (general) by johnslegers
+Foto Assisted Diffusion (general) by Dunkindont
+Future Diffusion by nitrosocke
+HASDX (general) by johnslegers
+IconsMI App icons (icons) by jvkape
+Inkpunk Diffusion by Envvi
+Lowpoly World by MirageML
+OpenJourney (general) by prompthero
+OpenJourney v2 (general) by prompthero
+OpenNiji (anime) by Korakoe
+Paint Journey 2 (painting) by FredZhang7
+Papercut by ShadoWxShinigamI
+Pastel Mix (anime) by andite
+Portrait Plus (portrait) by wavymulder
+Realistic Vision 1.3 (realistic) by SG161222
+Redshift Diffusion (3d_render) by nitrosocke
+Redshift Diffusion (768px) (3d_render) by nitrosocke
+Something 2 (anime) by NoCrypt
+Stable Diffusion 1.4 (general) by CompVis
+Stable Diffusion 1.5 (general) by runwayml
+Stable Diffusion 2.0 (512px) (general) by stabilityai
+Stable Diffusion 2.0 (768px) (general) by stabilityai
+Stable Diffusion 2.1 (512px) (general) by stabilityai
+Stable Diffusion 2.1 (768px) (general) by stabilityai
+Stable Diffusion FluidArt by Fictiverse
+Stable Diffusion PaperCut by Fictiverse
+Stable Diffusion VoxelArt by Fictiverse
+Steampunk Diffusion by AIArtsChannel
+Synthwavepunk v2 (cyberpunk) by ItsJayQz
+T-shirt Diffusion by Magifactory
+Texture Diffusion by dream-textures
+Trinart 2.0 (anime) by naclbit
+Vectorartz Diffusion by coder119
+Vintedois Diffusion (simple, general) by 22h
+Vox 2 by plasmo
+Waifu Diffusion 1.3 (anime) by hakurei
+Waifu Diffusion 1.4 (anime) by hakurei

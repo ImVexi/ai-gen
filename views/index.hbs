@@ -34,12 +34,10 @@
 <body class="with-custom-webkit-scrollbars with-custom-css-scrollbars dark-mode text-center">
     <form class="m-auto w-three-quarter">
     <h1>AI Generator</h1>
-    <h4>XYZ and counting...</h4>
+    <h4>{{{count}}} and counting...</h4>
     <h5>Please don't put over 50 sample rate! Its not worth it and 35-50 is better!</h5>
     <div class="form-group">
         <select class="form-control" id="model" required="required">
-            <option value="andite/anything-v4.0">andite/anything-v4.0</option>
-            <option value="katakana/2D-Mix">katakana/2D-Mix</option>
         </select>
     </div>
 
@@ -50,7 +48,7 @@
         <input class="form-control" maxlength="77" id="username" placeholder="Username, setting to none will make it public!"></input>
     </div>
     <div class="form-group">
-        <input class="form-control" maxlength="3" id="sample" placeholder="Sample rate, max of 100"></input>
+        <input class="form-control" maxlength="10" id="sample" placeholder="Sample rate, max of 100"></input>
     </div>
 
     </form>
@@ -58,12 +56,22 @@
     <button class="btn btn-primary" id="generate_button" onclick="send_prompt();">Generate</button>
     <br><br>
 
-    <img width="100%" id="generated_image" style="display: block; border-style: solid; border-width: 3px; display: none; max-width: 512px; margin-left: auto; margin-right: auto;" />
+    <div id="generated_images">
+        <img width="100%" id="generated_image" style="display: block; border-style: solid; border-width: 3px; display: none; max-width: 512px; margin-left: auto; margin-right: auto;" />
+    </div>
+    
     <h6>Some code srced from Madeline</h6>
 </body>
 
-<script>
+<script defer>
     var queue_item = null;
+    var models = {{{models}}}
+    for (var model of models){
+        var modelElm = document.createElement("option")
+        modelElm.value = model
+        modelElm.text = model
+        document.getElementById("model").append(modelElm)
+    }
 
     function send_prompt() {
         document.title = `AI Generator - Working`
@@ -86,7 +94,7 @@
         })
 
         document.getElementById("generate_button").style.display = "none";
-        document.getElementById("generated_image").style.display = "none";
+        document.getElementById("generated_images").style.display = "none";
         document.getElementById("queue_info").style.display = "inline-block";
         document.getElementById("queue_info").innerHTML = `...`;
     }
@@ -100,10 +108,18 @@
                 set_queue(queue_item);
             })
         }
-    }, 2000)
+    }, 500)
 
     function set_image(id, username) {
-        document.getElementById("generated_image").src = `/image/${id}?username=${username}`;
+        document.getElementById("generated_images").innerHTML= "Loading..."
+        setTimeout(()=>{
+            document.getElementById("generated_images").innerHTML= ""
+            for (let i = 0; i < queue_item.count; i++) {
+                var img = document.createElement("img")
+                img.src = `/image/${id}-${i}?username=${username}`
+                document.getElementById("generated_images").append(img)
+            }
+        }, (queue_item.count*1000) / 500)
     }
 
     function set_queue(queue_item) {
@@ -111,12 +127,12 @@
             document.getElementById("queue_info").style.display = "inline-block";
             document.getElementById("queue_info").innerHTML = queue_item.message;
             document.getElementById("generate_button").style.display = "inline-block";
-            document.getElementById("generated_image").style.display = "none";
+            document.getElementById("generated_images").style.display = "none";
         }
         else if (queue_item.status == "FINISHED") {
             document.getElementById("queue_info").style.display = "none";
             document.getElementById("generate_button").style.display = "inline-block";
-            document.getElementById("generated_image").style.display = "block";
+            document.getElementById("generated_images").style.display = "block";
             set_image(queue_item.id, queue_item.username);
             document.title = `AI Generator - Done!`
         }
@@ -124,15 +140,15 @@
             document.getElementById("queue_info").style.display = "inline-block";
             document.getElementById("queue_info").innerHTML = `Waiting in queue... (${queue_item.position})`;
             document.getElementById("generate_button").style.display = "none";
-            document.getElementById("generated_image").style.display = "none";
+            document.getElementById("generated_images").style.display = "none";
             document.title = `AI Generator - ${queue_item.position}`
         }
         else {
             document.getElementById("queue_info").style.display = "inline-block";
-            document.getElementById("queue_info").innerHTML = `Generating image...`;
+            document.getElementById("queue_info").innerHTML = `Generating image... ${Math.round(queue_item.progress)}%`;
             document.getElementById("generate_button").style.display = "none";
-            document.getElementById("generated_image").style.display = "none";
-            document.title = `AI Generator - Working`
+            document.getElementById("generated_images").style.display = "none";
+            document.title = `AI Generator - Working - ${Math.round(queue_item.progress)}%`
         }
     }
 </script>
