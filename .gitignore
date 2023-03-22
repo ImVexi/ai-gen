@@ -109,3 +109,4 @@ database.json
 imgs
 tmp
 cache
+aiServer/logs.json
