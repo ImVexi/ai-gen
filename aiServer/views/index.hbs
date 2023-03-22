@@ -45,6 +45,9 @@
         <input class="form-control" maxlength="999" id="prompt" placeholder="Describe the image that you want to generate in a few words"></input>
     </div>
     <div class="form-group">
+        <input class="form-control" maxlength="999" id="negprompt" placeholder="Describe what you DONT want in the image" value="ugly, tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, blurry, bad anatomy, blurred, watermark, grainy, signature, cut off, draft, purple dots"></input>
+    </div>
+    <div class="form-group">
         <input class="form-control" maxlength="77" id="username" placeholder="Username, setting to none will make it public!"></input>
     </div>
     <div class="form-group">
@@ -61,6 +64,7 @@
     </div>
     
     <h6>Some code srced from Madeline</h6>
+    <h1><a href="/info" target="_blank">Info/FAQ</a></h1>
 </body>
 
 <script defer>
@@ -76,6 +80,7 @@
     function send_prompt() {
         document.title = `AI Generator - Working`
         var p = encodeURIComponent(document.getElementById("prompt").value);
+        var np = encodeURIComponent(document.getElementById("negprompt").value);
         var m = encodeURIComponent(document.getElementById("model").value);
         var u = encodeURIComponent(document.getElementById("username").value);
         var s = encodeURIComponent(document.getElementById("sample").value);
@@ -83,7 +88,7 @@
 
         if (u == null || u == "") u = "public"
 
-        fetch(`/generate?prompt=${p}&model=${m}&username=${u}&sample=${s}`).then(function(res) {
+        fetch(`/generate?prompt=${p}&negprompt=${np}&model=${m}&username=${u}&sample=${s}`).then(function(res) {
             return res.json()
         }).then(function(data) {
             if (data.status == "QUEUED") {

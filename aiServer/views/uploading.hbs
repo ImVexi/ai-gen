@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Generator</title>
+</head>
+<body>
+    <h1>currently uploading data to CDN!</h1>
+    <h1>This should be quick!</h1>
+    <h1>Auto reload in: <a id="reload">10</a></h1>
+    <script>
+        const re = document.getElementById("reload")
+        var cnt = 0
+        var time = 10
+        setInterval(()=>{
+            cnt ++
+            re.innerText = time-cnt
+            if (cnt >= time) location.reload()
+        }, 1000)
+    </script>
+</body>
+</html>

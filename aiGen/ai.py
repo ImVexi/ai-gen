@@ -7,7 +7,8 @@ import warnings
 import time
 import json
 import base64
-import asyncio
+from PIL import Image, ImageDraw, ImageFont
+import numpy as np
 
 print("Connecting...")
 
@@ -15,6 +16,7 @@ apiURL = "http://192.168.4.50:3504/worker"
 
 workerID = None
 currentJobID = None
+working = False
 
 def makeRequest(typeIn, batchData=None, jobID=None, updateData=None):
     global workerID
@@ -89,10 +91,11 @@ def progress_function(step: int, timestep: int, latents: torch.FloatTensor):
     # print(f"Progress: {progress} {currentJobID}")
     makeRequest("update", jobID=currentJobID, updateData=progress)
 
-def t2i(steps=50, jobID=None, model=None, prompt="Error", imgs=1):
+def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs=1, scale=7.5):
     global workerID
     global currentJobID
     global apiURL
+    global working
     
     print(f"Creating model [{model}]")
     
@@ -103,23 +106,30 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", imgs=1):
     
     print(f"Generating job [{jobID}] with prompt [{prompt}]")
     
-    images = pipe(prompt, num_inference_steps=int(steps), callback=progress_function, num_images_per_prompt=int(imgs) or 1).images
+    
+    images = pipe(prompt, negative_prompt=negPrompt, guidance_scale=int(scale), num_inference_steps=int(steps), callback=progress_function, num_images_per_prompt=int(imgs) or 1).images
     
     print(f"Finished generating prompt [{jobID}]")
     
     batch = {}
     
-    for imageIndex,image in enumerate(images):
+    for imageIndex, image in enumerate(images):
+        # Draw the text on the image, might remove
+        ImageDraw.Draw(image).text((image.size[0]/3, 10), "AI IMAGE, ©ai.airplanegobrr.xyz", font=ImageFont.truetype("arial.ttf", size=20), fill=(255, 255, 255), align="center", anchor="mm")
+        ImageDraw.Draw(image).text((image.size[0]-180, image.size[1]-10), "AI IMAGE, ©ai.airplanegobrr.xyz", font=ImageFont.truetype("arial.ttf", size=20), fill=(255, 255, 255), align="center", anchor="mm")
         
-        image_io = BytesIO()
-        image.save(image_io, format="PNG")
-        image.save(f"tmp/{imageIndex}.png")
-        image_io.seek(0)
-        base64IMG = base64.b64encode(image_io.read()).decode("utf8")
-        batch[imageIndex] = base64IMG
+        # Save the image to a file for debugging purposes
+        with BytesIO() as image_io:
+            image.save(image_io, format="PNG")
+            image_io.seek(0)
+            base64IMG = base64.b64encode(image_io.read()).decode("utf8")
+        
+            # Add the encoded image to the batch
+            batch[imageIndex] = base64IMG
         
     makeRequest("upload", batchData=batch, jobID=currentJobID)
     print(f"Submitted [{jobID}]")
+    working = False
 
 def i2i():
     pipe = StableDiffusionImg2ImgPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16)
@@ -167,16 +177,18 @@ def upscale(image=None, prompt=None):
     upscaled_image.save("upsampled_cat.png")
 
 while True:
-    print("Checking")
-    try:
-        jsonO = makeRequest("get")
-        # print(jsonO)
-        # print(jsonO["jobID"])
-        if "jobID" in jsonO:
-            currentJobID = jsonO["jobID"]
-            t2i(steps=jsonO["sample"] or 50, jobID=currentJobID, model=jsonO["model"] or "andite/anything-v4.0", prompt=jsonO["prompt"] or "Error", imgs=jsonO["imgs"] or 1)
-    except:
-        None
-    finally: 
-        print("Done")
+    print("Checking", working)
+    if not working:
+        try:
+            jsonO = makeRequest("get")
+            # print(jsonO)
+            # print(jsonO["jobID"])
+            if jsonO and "jobID" in jsonO:
+                currentJobID = jsonO["jobID"]
+                working = True # This shouldn't be needed but there was an issue
+                t2i(steps=jsonO["sample"] or 50, jobID=currentJobID, model=jsonO["model"] or "andite/anything-v4.0", prompt=jsonO["prompt"] or "Error", imgs=jsonO["imgs"] or 1, negPrompt=jsonO["negPrompt"] or "Error")
+        except Exception as e:
+            print(e)
+        finally: 
+            print("Done")
     time.sleep(1)
