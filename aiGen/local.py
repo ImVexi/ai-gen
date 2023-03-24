@@ -67,8 +67,6 @@ def t2i(steps=50, model=None, prompt="Error", negPrompt="Error",imgs=1, scale=7.
     
     print(f"Finished generating prompt")
     
-    batch = {}
-    
     path = "imgs/"+prompt+str(random.randint(-999,999))
     if not os.path.exists(path):
         os.makedirs(path)
@@ -98,7 +96,11 @@ def t2i(steps=50, model=None, prompt="Error", negPrompt="Error",imgs=1, scale=7.
     if uploadToDiscord:
         webhook.execute()
     print(f"Done!")
-    output = {}
+    output = {
+        "path": path,
+        "images": list(images),
+        "total": total
+    }
     output["path"] = path
     output["images"] = imagesOutput
     output["total"] = total
