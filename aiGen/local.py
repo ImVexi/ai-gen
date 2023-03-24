@@ -33,18 +33,28 @@ def noneDef(*a, **k):
     None
 
 def t2i(steps=50, model=None, prompt="Error", negPrompt="Error",imgs=1, scale=7.5, height=512, width=512, progress=noneDef):
+    global cpuMode
+    global uploadToDiscord 
+    global upload 
+    global saveFile 
+    global copyright
+    
     print(f"Creating model [{model}]")
+    print(cpuMode, uploadToDiscord, upload, saveFile, copyright)
     
     warnings.simplefilter("ignore")
     pipe = None
     
     if cpuMode:
+        print("CPU")
         pipe = StableDiffusionPipeline.from_pretrained(model)
         pipe = pipe.to("cpu")
     else:
+        print("CUDA")
         pipe = StableDiffusionPipeline.from_pretrained(model, torch_dtype=torch.float16)
         pipe = pipe.to("cuda")
-    
+        
+    print(pipe.device)
     pipe.safety_checker = lambda images, clip_input: (images, False) # Allows NSFW!!
     
     print(f"Generating with prompt [{prompt}]")
