@@ -24,6 +24,8 @@ config = {
     "upload": False,
     "saveFile":False,
     "copyright":False,
+    "copyrightMsg": "",
+    "webhook": None,
     
     "workerID": None,
     "currentJob": None,
@@ -117,8 +119,13 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs
         # print("CUDA")
         pipe = StableDiffusionPipeline.from_pretrained(model, torch_dtype=torch.float16)
         pipe = pipe.to("cuda")
+        pipe.enable_vae_tiling()
+        pipe.enable_sequential_cpu_offload()
         
     pipe.safety_checker = lambda images, clip_input: (images, False) # Allows NSFW!!
+    
+    pipe.enable_attention_slicing()
+    pipe.enable_vae_slicing()
     
     print(f"Generating job [{jobID}] with prompt [{prompt}]")
     
@@ -141,7 +148,7 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs
     
     batch = {}
     if config["uploadToDiscord"]:
-        webhook = DiscordWebhook(url=webhookURL, content=f"Prompt: {prompt}\nNegprompt: {negPrompt}\nTime: {total}")
+        webhook = DiscordWebhook(url=config["webhook"], content=f"Prompt: {prompt}\nNegprompt: {negPrompt}\nTime: {total}")
     
     if config["saveFile"]:
         path = "imgs/"+prompt+str(random.randint(-999,999))
@@ -151,8 +158,8 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs
     for imageIndex, image in enumerate(images):
         # Draw the text on the image, might remove
         if config["copyright"]:
-            ImageDraw.Draw(image).text((image.size[0]/3, 10), "AI IMAGE, ©ai.airplanegobrr.xyz", font=ImageFont.truetype("arial.ttf", size=20), fill=(255, 255, 255), align="center", anchor="mm")
-            ImageDraw.Draw(image).text((image.size[0]-180, image.size[1]-10), "AI IMAGE, ©ai.airplanegobrr.xyz", font=ImageFont.truetype("arial.ttf", size=20), fill=(255, 255, 255), align="center", anchor="mm")
+            ImageDraw.Draw(image).text((image.size[0]/3, 10), config["copyrightMsg"], font=ImageFont.truetype("arial.ttf", size=20), fill=(255, 255, 255), align="center", anchor="mm")
+            ImageDraw.Draw(image).text((image.size[0]-180, image.size[1]-10), config["copyrightMsg"], font=ImageFont.truetype("arial.ttf", size=20), fill=(255, 255, 255), align="center", anchor="mm")
         
         # Save the image to a file for debugging purposes
         with BytesIO() as image_io:
@@ -162,6 +169,8 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs
             
             if config["uploadToDiscord"]:
                 webhook.add_file(file=image_io, filename=f"{str(imageIndex)}.png")
+            if config["saveFile"]:
+                image.save(f"{path}/{str(imageIndex)}.png", format="PNG")
         
             # Add the encoded image to the batch
             batch[imageIndex] = base64IMG

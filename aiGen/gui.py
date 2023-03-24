@@ -34,7 +34,8 @@ ai.config['uploadToDiscord'] = uploadToDiscord
 ai.config['upload'] = upload
 ai.config['saveFile'] = saveFile
 ai.config['copyright'] = copyright
-ai.webhookURL = webhookURL
+ai.config["webhook"] = webhookURL
+ai.config["copyrightMsg"] = "AI IMAGE, ©ai.airplanegobrr.xyz"
 
 # ai.config(cpuModei=cpuMode,uploadToDiscordi=uploadToDiscord, uploadi=upload,saveFilei=saveFile,copyrighti=copyright)
 
@@ -65,15 +66,15 @@ pb = ttk.Progressbar(
     orient='horizontal',
     length=300
 )
-pb.grid(column=0, row=0, columnspan=3, sticky = tk.E)
+pb.grid(column=1, row=0, columnspan=2)
 pt = tk.Label(root, text="Waiting...")
-pt.grid(column=4, row=0,sticky = tk.W)
+pt.grid(column=3, row=0,sticky = tk.W)
 
 def progress_function(step: int, *args):
     global currentStep
     with lock:
         if step and isinstance(step, int):
-            progress = step / currentStep * 100
+            progress = round(step / currentStep * 100)
             print(f"Progress: {progress}%")
             pb.configure(value=progress)
             pt.configure(text=f"Progress: {progress}%")
@@ -94,8 +95,9 @@ def makeAI_T():
     height = heightBox.get()
     currentStep = int(steps)
     print(prompt, negPrompt, steps, width, height)
-    progress_function(0)
+    pt.configure(text=f"Loading...")
     output = ai.t2i(prompt=prompt, negPrompt=negPrompt, height=height, width=width, steps=steps, imgs=imgCount, model="andite/anything-v4.0", progress=progress_function)
+    pt.configure(text=f"Done!")
     print(output)
     imgs = output["images"]
     currentImg=0
