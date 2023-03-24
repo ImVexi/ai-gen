@@ -8,3 +8,8 @@
 # Running other
 
 Fill out ltr cus lazy and its 1-2AM
+
+# Todo
+
+- [ ] Merge the local.py and ai.py files
+- [ ] Finish CDN
