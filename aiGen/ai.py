@@ -1,53 +1,52 @@
 from diffusers import StableDiffusionPipeline, StableDiffusionImg2ImgPipeline, StableDiffusionDepth2ImgPipeline, StableDiffusionUpscalePipeline
 from io import BytesIO
-from PIL import Image
 import torch
 import requests
 import warnings
 import time
 import json
 import base64
+import random
+import os
+from discord_webhook import DiscordWebhook
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
-import nvidia_smi
-
-GPUMode = False
-GPUMem = 0
-GPUCount = None
-
-nvidia_smi.nvmlInit()
-GPUCount = nvidia_smi.nvmlDeviceGetCount()
-if GPUCount > 0:
-    handle = nvidia_smi.nvmlDeviceGetHandleByIndex(1)
-    info = nvidia_smi.nvmlDeviceGetMemoryInfo(handle)
-    max = round((info.total/1024)/1024,2)
-    print(max)
 
 print("Connecting...")
 
 apiURL = "http://192.168.4.50:3504/worker"
+webhookURL = "https://discord.com/api/webhooks"
+uploadURL = None # Not done
 
-workerID = None
-currentJobID = None
+config = {
+    "cpuMode": False,
+    "uploadToDiscord": False,
+    "upload": False,
+    "saveFile":False,
+    "copyright":False,
+    
+    "workerID": None,
+    "currentJob": None,
+    "isJobMode": True
+}
 working = False
 
 def makeRequest(typeIn, batchData=None, jobID=None, updateData=None):
-    global workerID
-    global currentJobID
     global apiURL
+    global config
     
-    if not workerID:
+    if not config["workerID"]:
         response = requests.post(f"{apiURL}/add")
         responseData = response.json()
         if "good" in responseData and "workerID" in responseData:
-            workerID = responseData["workerID"]
+            config["workerID"] = responseData["workerID"]
         else:
             print("[Warn] Failed to add worker!")
     
     headers = {'Content-Type': 'application/json'}
     defaultData = {}
-    defaultData["workerID"] = workerID
-    defaultData["jobID"] = jobID
+    defaultData["workerID"] = config["workerID"]
+    defaultData["jobID"] = config["currentJob"]
     match typeIn:
         case "uploadOLD":
             # base64IMG = base64.b64encode(fileData).decode("utf8")
@@ -74,8 +73,7 @@ def makeRequest(typeIn, batchData=None, jobID=None, updateData=None):
             response = requests.get(f"{apiURL}/types", data=json.dumps(defaultData), headers=headers)
             return response.json() # EG ["andite/anything-v4.0","katakana/2D-Mix"]
 
-
-models = makeRequest("getTypes")
+# models = makeRequest("getTypes")
 
 # print("Loading models...")
 # pipes = {}
@@ -90,59 +88,94 @@ models = makeRequest("getTypes")
 #             pipe.enable_attention_slicing()
 #         pipes[model] = pipe
 
-print("Ready as", workerID)
+print("Ready")
 
 def progress_function(step: int, timestep: int, latents: torch.FloatTensor):
-    # Calculate the progress as a percentage
-    progress = (step) 
-
-    # Update the progress bar
-    # if progress%1 == 1:
-    global workerID
-    global currentJobID
     global apiURL
-    # print(f"Progress: {progress} {currentJobID}")
-    makeRequest("update", jobID=currentJobID, updateData=progress)
+    global config
+    progress = step
+    
+    if config["isJobMode"]:
+        makeRequest("update", jobID=config["currentJob"], updateData=progress)
 
-def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs=1, scale=7.5):
-    global workerID
-    global currentJobID
+def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs=1, scale=7.5, height=512, width=512, progress=progress_function):
     global apiURL
     global working
+    
+    global config
     
     print(f"Creating model [{model}]")
     
     warnings.simplefilter("ignore")
-    pipe = StableDiffusionPipeline.from_pretrained(model, torch_dtype=torch.float16)
-    pipe = pipe.to("cuda")
+    pipe = None
+    
+    if config["cpuMode"]:
+        # print("CPU")
+        pipe = StableDiffusionPipeline.from_pretrained(model)
+        pipe = pipe.to("cpu")
+    else:
+        # print("CUDA")
+        pipe = StableDiffusionPipeline.from_pretrained(model, torch_dtype=torch.float16)
+        pipe = pipe.to("cuda")
+        
     pipe.safety_checker = lambda images, clip_input: (images, False) # Allows NSFW!!
     
     print(f"Generating job [{jobID}] with prompt [{prompt}]")
     
+    start = time.time()
+    images = pipe(
+        prompt,
+        negative_prompt=negPrompt,
+        callback=progress,
+        guidance_scale=int(scale),
+        num_inference_steps=int(steps),
+        num_images_per_prompt=int(imgs) or 1,
+        height=int(height) or 512,
+        width=int(width) or 512
+    ).images
+    end = time.time()
     
-    images = pipe(prompt, negative_prompt=negPrompt, guidance_scale=int(scale), num_inference_steps=int(steps), callback=progress_function, num_images_per_prompt=int(imgs) or 1).images
+    total = end-start
     
     print(f"Finished generating prompt [{jobID}]")
     
     batch = {}
+    if config["uploadToDiscord"]:
+        webhook = DiscordWebhook(url=webhookURL, content=f"Prompt: {prompt}\nNegprompt: {negPrompt}\nTime: {total}")
+    
+    if config["saveFile"]:
+        path = "imgs/"+prompt+str(random.randint(-999,999))
+        if not os.path.exists(path):
+            os.makedirs(path)
     
     for imageIndex, image in enumerate(images):
         # Draw the text on the image, might remove
-        ImageDraw.Draw(image).text((image.size[0]/3, 10), "AI IMAGE, ©ai.airplanegobrr.xyz", font=ImageFont.truetype("arial.ttf", size=20), fill=(255, 255, 255), align="center", anchor="mm")
-        ImageDraw.Draw(image).text((image.size[0]-180, image.size[1]-10), "AI IMAGE, ©ai.airplanegobrr.xyz", font=ImageFont.truetype("arial.ttf", size=20), fill=(255, 255, 255), align="center", anchor="mm")
+        if config["copyright"]:
+            ImageDraw.Draw(image).text((image.size[0]/3, 10), "AI IMAGE, ©ai.airplanegobrr.xyz", font=ImageFont.truetype("arial.ttf", size=20), fill=(255, 255, 255), align="center", anchor="mm")
+            ImageDraw.Draw(image).text((image.size[0]-180, image.size[1]-10), "AI IMAGE, ©ai.airplanegobrr.xyz", font=ImageFont.truetype("arial.ttf", size=20), fill=(255, 255, 255), align="center", anchor="mm")
         
         # Save the image to a file for debugging purposes
         with BytesIO() as image_io:
             image.save(image_io, format="PNG")
             image_io.seek(0)
             base64IMG = base64.b64encode(image_io.read()).decode("utf8")
+            
+            if config["uploadToDiscord"]:
+                webhook.add_file(file=image_io, filename=f"{str(imageIndex)}.png")
         
             # Add the encoded image to the batch
             batch[imageIndex] = base64IMG
-        
-    makeRequest("upload", batchData=batch, jobID=currentJobID)
-    print(f"Submitted [{jobID}]")
+    
+    if config["isJobMode"]:
+        makeRequest("upload", batchData=batch, jobID=config["currentJob"])
+        print(f"Submitted [{jobID}]")
+    output = {
+        "path": path,
+        "images": list(images),
+        "total": total
+    }
     working = False
+    return output
 
 def i2i():
     pipe = StableDiffusionImg2ImgPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16)
@@ -189,7 +222,7 @@ def upscale(image=None, prompt=None):
 
     upscaled_image.save("upsampled_cat.png")
 
-while True:
+def check():
     print("Checking", working)
     if not working:
         try:
@@ -197,11 +230,15 @@ while True:
             # print(jsonO)
             # print(jsonO["jobID"])
             if jsonO and "jobID" in jsonO:
-                currentJobID = jsonO["jobID"]
+                config["currentJob"] = jsonO["jobID"]
                 working = True # This shouldn't be needed but there was an issue
-                t2i(steps=jsonO["sample"] or 50, jobID=currentJobID, model=jsonO["model"] or "andite/anything-v4.0", prompt=jsonO["prompt"] or "Error", imgs=jsonO["imgs"] or 1, negPrompt=jsonO["negPrompt"] or "Error")
+                t2i(steps=jsonO["sample"] or 50, jobID=config["currentJob"], model=jsonO["model"] or "andite/anything-v4.0", prompt=jsonO["prompt"] or "Error", imgs=jsonO["imgs"] or 1, negPrompt=jsonO["negPrompt"] or "Error")
         except Exception as e:
             print(e)
+            working = False
         finally: 
             print("Done")
-    time.sleep(1)
+
+# while True:
+    # check()
+    # time.sleep(1)
