@@ -73,6 +73,7 @@ def makeAI_T():
     output = local.t2i(prompt=prompt, negPrompt=negPrompt, height=height, width=width, steps=steps, imgs=imgCount, model="andite/anything-v4.0", progress=progress_function)
     print(output)
     imgs = output["images"]
+    currentImg=0
     index.configure(text=f"Index: {currentImg+1} Max: {len(imgs)}")
     
     img = ImageTk.PhotoImage(imgs[currentImg]) # tk.PhotoImage(ImageTk.PhotoImage(imgs[currentImg])).subsample(1, 1)
