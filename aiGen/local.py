@@ -8,13 +8,26 @@ import os
 import time
 from discord_webhook import DiscordWebhook, DiscordEmbed
 
-cpuMode = True
+cpuMode = False
 uploadToDiscord = True
 upload = True
 saveFile = True
 copyright = True
 
 webhookURL = "https://discord.com/api/webhooks"
+
+def config(cpuModei = True, uploadToDiscordi=True,uploadi=True,saveFilei=True, copyrighti=True):
+    global cpuMode
+    global uploadToDiscord 
+    global upload 
+    global saveFile 
+    global copyright
+    
+    cpuMode = cpuModei
+    uploadToDiscord = uploadToDiscordi
+    upload = uploadi
+    saveFile = saveFilei
+    copyright = copyrighti
 
 def noneDef(*a, **k):
     None

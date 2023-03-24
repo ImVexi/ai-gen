@@ -27,12 +27,7 @@ default_width = 512
 #   CONFIG   #
 ##############
 
-local.webhookURL = webhookURL
-local.cpuMode = cpuMode
-local.uploadToDiscord = uploadToDiscord
-local.upload = upload
-local.saveFile = saveFile
-local.copyright = copyright
+local.config(cpuModei=cpuMode,uploadToDiscordi=uploadToDiscord, uploadi=upload,saveFilei=saveFile,copyrighti=copyright)
 
 root = tk.Tk()
 root.title("AI")
