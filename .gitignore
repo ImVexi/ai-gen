@@ -111,3 +111,5 @@ tmp
 cache
 aiServer/logs.json
 favs
+__pycache__
+*.png

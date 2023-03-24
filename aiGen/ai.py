@@ -9,6 +9,19 @@ import json
 import base64
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
+import nvidia_smi
+
+GPUMode = False
+GPUMem = 0
+GPUCount = None
+
+nvidia_smi.nvmlInit()
+GPUCount = nvidia_smi.nvmlDeviceGetCount()
+if GPUCount > 0:
+    handle = nvidia_smi.nvmlDeviceGetHandleByIndex(1)
+    info = nvidia_smi.nvmlDeviceGetMemoryInfo(handle)
+    max = round((info.total/1024)/1024,2)
+    print(max)
 
 print("Connecting...")
 

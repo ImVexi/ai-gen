@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            color: white;
+            background-color: gray;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            justify-content: center;
+        }
+        .grid-container div { margin: 5px; }
+        .holder { }
+        .imgHolder {
+            border-style: dotted;
+        }
+        .imgHolder * {
+            width: auto;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="holder">
+        <div class="grid-container">
+            <div class="imgHolder">
+                <img src="0.png">
+            </div>
+            <div class="imgHolder">
+                <img src="0.png">
+            </div>
+            <div class="imgHolder">
+                <img src="0.png">
+            </div>
+            <div class="imgHolder">
+                <a>Hi4</a>
+            </div>
+            <div class="imgHolder">
+                <a>Hi5</a>
+            </div>
+            <div class="imgHolder">
+                <a>Hi6</a>
+            </div>
+            <div class="imgHolder">
+                <a>Hi</a>
+            </div>
+            <div class="imgHolder">
+                <a>Hi</a>
+            </div>
+            <div class="imgHolder">
+                <a>Hi</a>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        async function laod(index = 0){
+            res = await fetch(`http://ai.cdn.airplanegobrr.xyz/fetch/${index}`)
+            json = await res.json()
+        }
+        window.onscroll = function(ev) {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+                // you're at the bottom of the page
+                console.log("bottem")
+            }
+        };
+    </script>
+</body>
+</html>
