@@ -1,6 +1,7 @@
 import tkinter as tk
+from tkinter import ttk
 from PIL import ImageTk, Image
-import local
+import ai
 import threading
 from io import BytesIO
 import win32clipboard
@@ -9,7 +10,7 @@ import win32clipboard
 #   CONFIG   #
 ##############
 
-webhookURL = "https://discord.com/api/webhooks/1088669801897013339/abPnI5ZSMEIZh70yYYwDGsMK1Nt3_5MTZPFhUxMLOWoRQnMjEoSALxtCa7vgl7mCfSbd"
+webhookURL = "https://discord.com/api/webhooks/1088824131761491989/8stLgAVgvyIqZhvv4LbcXaGQU4m6zjxvMsiCCctCDkB8tJ_fAAPC4XRLmcCa2Jw3lH3w"
 cpuMode = True
 uploadToDiscord = True
 upload = True
@@ -27,7 +28,15 @@ default_width = 512
 #   CONFIG   #
 ##############
 
-local.config(cpuModei=cpuMode,uploadToDiscordi=uploadToDiscord, uploadi=upload,saveFilei=saveFile,copyrighti=copyright)
+ai.config["isJobMode"] = False
+ai.config['cpuMode'] = cpuMode
+ai.config['uploadToDiscord'] = uploadToDiscord
+ai.config['upload'] = upload
+ai.config['saveFile'] = saveFile
+ai.config['copyright'] = copyright
+ai.webhookURL = webhookURL
+
+# ai.config(cpuModei=cpuMode,uploadToDiscordi=uploadToDiscord, uploadi=upload,saveFilei=saveFile,copyrighti=copyright)
 
 root = tk.Tk()
 root.title("AI")
@@ -49,10 +58,25 @@ imgs = None
 currentStep = None
 working = False
 
-def progress_function(step, timestep, latents):
-    if step and isinstance(step, int):
-        None
-        # print(step/currentStep*100) broke as heck
+lock = threading.Lock()
+
+pb = ttk.Progressbar(
+    root,
+    orient='horizontal',
+    length=300
+)
+pb.grid(column=0, row=0, columnspan=3, sticky = tk.E)
+pt = tk.Label(root, text="Waiting...")
+pt.grid(column=4, row=0,sticky = tk.W)
+
+def progress_function(step: int, *args):
+    global currentStep
+    with lock:
+        if step and isinstance(step, int):
+            progress = step / currentStep * 100
+            print(f"Progress: {progress}%")
+            pb.configure(value=progress)
+            pt.configure(text=f"Progress: {progress}%")
 
 # Threading
 def makeAI_T():
@@ -70,7 +94,8 @@ def makeAI_T():
     height = heightBox.get()
     currentStep = int(steps)
     print(prompt, negPrompt, steps, width, height)
-    output = local.t2i(prompt=prompt, negPrompt=negPrompt, height=height, width=width, steps=steps, imgs=imgCount, model="andite/anything-v4.0", progress=progress_function)
+    progress_function(0)
+    output = ai.t2i(prompt=prompt, negPrompt=negPrompt, height=height, width=width, steps=steps, imgs=imgCount, model="andite/anything-v4.0", progress=progress_function)
     print(output)
     imgs = output["images"]
     currentImg=0
@@ -88,7 +113,8 @@ def makeAI():
     else:
         tk.messagebox.showwarning(title="Error", message="There is a job running!")
 
-row = 0
+
+row = 1
 tk.Label(root, text="Prompt").grid(row = row, column = 0, sticky = tk.W, pady = 2)
 promptBox.grid(row = row, column = 1, pady = 2)
 row+=1
@@ -120,7 +146,7 @@ img = tk.PhotoImage(file = r"0.png").subsample(1, 1)
 
 # setting image with the help of label
 imgElm = tk.Label(root, image = img)
-imgElm.grid(row = 0, column = 2, columnspan = 2, rowspan = row, padx = 2, pady = 2)
+imgElm.grid(row = 2, column = 2, columnspan = 10, rowspan = 10, padx = 2, pady = 2)
 
 currentImg = 0
 
@@ -164,22 +190,25 @@ b2 = tk.Button(root, command=nextImg, text = "Next")
 c = tk.Button(root, command=copy, text="Copy")
 
 # arranging button widgets
-b1.grid(row = row, column = 2, sticky = tk.E)
-b2.grid(row = row, column = 3, sticky = tk.W)
-c.grid(row = row, column= 3, sticky=tk.E)
+b1.grid(row = 1, column = 2, sticky = tk.E)
+b2.grid(row = 1, column = 3, sticky = tk.W)
+c.grid(row = 1, column= 4, sticky=tk.W)
 
 # Configs
-cpuB = tk.Button(root, text=f"Toggle CPU Mode: {local.cpuMode}", command=lambda: toggle_attribute_value(local, 'cpuMode', cpuB))
-uploadB = tk.Button(root, text=f"Upload: {local.upload}", command=lambda: toggle_attribute_value(local, 'upload', uploadB))
-uploadDB = tk.Button(root, text=f"Upload Discord: {local.uploadToDiscord}", command=lambda: toggle_attribute_value(local, 'uploadToDiscord', uploadDB))
-saveB = tk.Button(root, text=f"Save file: {local.saveFile}", command=lambda: toggle_attribute_value(local, 'saveFile', saveB))
-copyrightB = tk.Button(root, text=f"Copyright (pls leave on? :( )): {local.copyright}", command=lambda: toggle_attribute_value(local, 'copyright', copyrightB))
+config_values = ai.config
+cpuB = tk.Button(root, text=f"Toggle CPU Mode: {config_values['cpuMode']}", command=lambda: toggle_attribute_value('cpuMode', cpuB))
+uploadB = tk.Button(root, text=f"Upload: {config_values['upload']}", command=lambda: toggle_attribute_value('upload', uploadB))
+uploadDB = tk.Button(root, text=f"Upload Discord: {config_values['uploadToDiscord']}", command=lambda: toggle_attribute_value('uploadToDiscord', uploadDB))
+saveB = tk.Button(root, text=f"Save file: {config_values['saveFile']}", command=lambda: toggle_attribute_value('saveFile', saveB))
+copyrightB = tk.Button(root, text=f"Copyright (pls leave on? :( )): {config_values['copyright']}", command=lambda: toggle_attribute_value('copyright', copyrightB))
 
-def toggle_attribute_value(obj, attribute_name, button):
-    value = getattr(obj, attribute_name)
-    setattr(obj, attribute_name, not value)
+def toggle_attribute_value(attribute_name, button):
+    config_values = ai.config
+    value = config_values[attribute_name]
+    config_values[attribute_name] = not value
     new_text = f"{attribute_name.capitalize()}: {not value}"
     button.configure(text=new_text)
+
 
 
 
