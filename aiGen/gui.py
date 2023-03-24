@@ -4,7 +4,7 @@ from PIL import ImageTk, Image
 import ai
 import threading
 from io import BytesIO
-import win32clipboard
+# import win32clipboard
 
 ##############
 #   CONFIG   #
@@ -182,9 +182,9 @@ def copy():
     imgs[currentImg].convert('RGB').save(output, 'BMP')
     data = output.getvalue()[14:]
     output.close()
-    win32clipboard.OpenClipboard()
-    win32clipboard.SetClipboardData(win32clipboard.CF_DIB, data)
-    win32clipboard.CloseClipboard()
+    #win32clipboard.OpenClipboard()
+    #win32clipboard.SetClipboardData(win32clipboard.CF_DIB, data)
+    #win32clipboard.CloseClipboard()
 
 # button widget
 b1 = tk.Button(root, command=backImg, text = "Back")
