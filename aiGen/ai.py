@@ -1,6 +1,5 @@
 from diffusers import StableDiffusionPipeline, StableDiffusionImg2ImgPipeline, StableDiffusionDepth2ImgPipeline, StableDiffusionUpscalePipeline
 from io import BytesIO
-import torch
 import requests
 import warnings
 import time
@@ -90,7 +89,7 @@ def makeRequest(typeIn, batchData=None, jobID=None, updateData=None):
 
 print("Ready")
 
-def progress_function(step: int, timestep: int, latents: torch.FloatTensor):
+def progress_function(step: int, timestep: int, latents):
     global apiURL
     global config
     progress = step
@@ -115,6 +114,7 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs
         pipe = pipe.to("cpu")
     else:
         # print("CUDA")
+        import torch
         pipe = StableDiffusionPipeline.from_pretrained(model, torch_dtype=torch.float16)
         pipe = pipe.to("cuda")
         
