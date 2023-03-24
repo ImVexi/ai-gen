@@ -9,6 +9,7 @@ import win32clipboard
 #   CONFIG   #
 ##############
 
+webhookURL = "https://discord.com/api/webhooks/1088669801897013339/abPnI5ZSMEIZh70yYYwDGsMK1Nt3_5MTZPFhUxMLOWoRQnMjEoSALxtCa7vgl7mCfSbd"
 cpuMode = True
 uploadToDiscord = True
 upload = True
@@ -26,6 +27,7 @@ default_width = 512
 #   CONFIG   #
 ##############
 
+local.webhookURL = webhookURL
 local.cpuMode = cpuMode
 local.uploadToDiscord = uploadToDiscord
 local.upload = upload

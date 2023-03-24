@@ -14,7 +14,7 @@ upload = True
 saveFile = True
 copyright = True
 
-webhookURL = "https://discord.com/api/webhooks/1088669801897013339/abPnI5ZSMEIZh70yYYwDGsMK1Nt3_5MTZPFhUxMLOWoRQnMjEoSALxtCa7vgl7mCfSbd"
+webhookURL = "https://discord.com/api/webhooks"
 
 def noneDef(*a, **k):
     None
