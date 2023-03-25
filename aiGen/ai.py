@@ -177,6 +177,7 @@ class doThing:
 
         batch = {}
         if self.config["uploadToDiscord"]:
+            print(self.config["webhook"])
             webhook = DiscordWebhook(
                 url=self.config["webhook"], content=f"Prompt: {prompt}\nNegprompt: {negPrompt}\nTime: {total}")
 
@@ -212,7 +213,7 @@ class doThing:
                 batch[imageIndex] = base64IMG
 
         if self.config["uploadToDiscord"]:
-            webhook.execute()
+            print(webhook.execute())
 
         if self.config["isJobMode"]:
             self.makeRequest("upload", batchData=batch, jobID=self.currentJob)
