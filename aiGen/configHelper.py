@@ -2,10 +2,10 @@ import os
 import json
 
 def ask(question):
-    o = input(f"{question} (Y,N or OTHER): ").upper()
-    if o == "Y":
+    o = input(f"{question} (Y,N or OTHER): ")
+    if o == "Y" or o == "y":
         return True
-    elif o == "N":
+    elif o == "N" or o == "n":
         return False
     else:
         return o
