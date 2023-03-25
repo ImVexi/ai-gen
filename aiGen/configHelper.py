@@ -26,11 +26,18 @@ if copyrightE:
 saveFile = ask("Save file")
 
 adv = ask("Would you like to see adv options? Such as VEA_TILINGs, and CPU_OFFLOAD?")
+
 tiling = None
 cpuOffload = None
+slicing = None
+attSlic = None
+
 if adv:
     tiling = ask("vae_tiling")
     cpuOffload = ask("sequential_cpu_offload")
+    attSlic = ask("attention_slicing")
+    slicing = ask("vae_slicing")
+    
 
 data = {
     "config":{
@@ -44,7 +51,9 @@ data = {
     },
     "pipeConfig":{
         "vae_tiling": bool(tiling) or True,
-        "sequential_cpu_offload": bool(cpuOffload) or True
+        "sequential_cpu_offload": bool(cpuOffload) or True,
+        "attention_slicing": bool(attSlic) or True,
+        "vae_slicing": bool(slicing) or True
     }
 }
 print("\nDoes this look right?")

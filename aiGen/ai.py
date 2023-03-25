@@ -41,7 +41,9 @@ class doThing:
     def __init__(self):
         self.pipeConfig = {
             "vae_tiling": True,
-            "sequential_cpu_offload": True
+            "sequential_cpu_offload": True,
+            "attention_slicing": True,
+            "vae_slicing": True
         }
         self.config = {
             "cpuMode": False,
