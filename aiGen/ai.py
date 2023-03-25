@@ -168,7 +168,8 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs
             base64IMG = base64.b64encode(image_io.read()).decode("utf8")
             
             if config["uploadToDiscord"]:
-                webhook.add_file(file=image_io, filename=f"{str(imageIndex)}.png")
+                image.save(f"{path}/{str(imageIndex)}.png", format="PNG")
+                webhook.add_file(file=f"{path}/{str(imageIndex)}.png", filename=f"{str(imageIndex)}.png")
             if config["saveFile"]:
                 image.save(f"{path}/{str(imageIndex)}.png", format="PNG")
         
