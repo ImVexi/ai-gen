@@ -256,10 +256,11 @@ def check():
         finally: 
             print("Done")
 
-while True:
-    if config["isJobMode"]:
-        check()
-    time.sleep(1)
+if __name__ == "__main__":
+    while True:
+        if config["isJobMode"]:
+            check()
+        time.sleep(1)
 
 # while True:
     # check()
