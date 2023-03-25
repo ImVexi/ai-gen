@@ -150,6 +150,8 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs
     if config["uploadToDiscord"]:
         webhook = DiscordWebhook(url=config["webhook"], content=f"Prompt: {prompt}\nNegprompt: {negPrompt}\nTime: {total}")
     
+    path = None
+    
     if config["saveFile"]:
         path = "imgs/"+prompt+str(random.randint(-999,999))
         if not os.path.exists(path):
@@ -168,7 +170,9 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs
             base64IMG = base64.b64encode(image_io.read()).decode("utf8")
             
             if config["uploadToDiscord"]:
-                webhook.add_file(file=image_io.read(), filename=f"{str(imageIndex)}.png")
+                image.save(f"{str(imageIndex)}.png", format="PNG")
+                webhook.add_file(file=f"{str(imageIndex)}.png", filename=f"{str(imageIndex)}.png")
+                os.remove(f"{str(imageIndex)}.png")
             if config["saveFile"]:
                 image.save(f"{path}/{str(imageIndex)}.png", format="PNG")
         
@@ -235,6 +239,7 @@ def upscale(image=None, prompt=None):
     upscaled_image.save("upsampled_cat.png")
 
 def check():
+    global working
     print("Checking", working)
     if not working:
         try:
@@ -250,6 +255,11 @@ def check():
             working = False
         finally: 
             print("Done")
+
+while True:
+    if config["isJobMode"]:
+        check()
+    time.sleep(1)
 
 # while True:
     # check()

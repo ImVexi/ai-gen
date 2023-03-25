@@ -6,6 +6,7 @@ specifiers:
   body-parser: ^1.20.2
   canvas: ^2.11.0
   express: ^4.18.2
+  express-basic-auth: ^1.2.1
   express-hbs: ^2.4.0
   express-ws: ^5.0.2
   ffmetadata: ^1.7.0
@@ -17,6 +18,7 @@ dependencies:
   body-parser: 1.20.2
   canvas: 2.11.0
   express: 4.18.2
+  express-basic-auth: 1.2.1
   express-hbs: 2.4.0
   express-ws: 5.0.2_express@4.18.2
   ffmetadata: 1.7.0
@@ -113,6 +115,13 @@ packages:
   /base64-js/0.0.2:
     resolution: {integrity: sha512-Pj9L87dCdGcKlSqPVUjD+q96pbIx1zQQLb2CUiWURfjiBELv84YX+0nGnKmyT/9KkC7PQk7UN1w+Al8bBozaxQ==}
     engines: {node: '>= 0.4'}
+    dev: false
+
+  /basic-auth/2.0.1:
+    resolution: {integrity: sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==}
+    engines: {node: '>= 0.8'}
+    dependencies:
+      safe-buffer: 5.1.2
     dev: false
 
   /bluebird/3.7.2:
@@ -379,6 +388,12 @@ packages:
   /etag/1.8.1:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
+    dev: false
+
+  /express-basic-auth/1.2.1:
+    resolution: {integrity: sha512-L6YQ1wQ/mNjVLAmK3AG1RK6VkokA1BIY6wmiH304Xtt/cLTps40EusZsU1Uop+v9lTDPxdtzbFmdXfFO3KEnwA==}
+    dependencies:
+      basic-auth: 2.0.1
     dev: false
 
   /express-hbs/2.4.0:
@@ -941,6 +956,10 @@ packages:
     hasBin: true
     dependencies:
       glob: 7.2.3
+    dev: false
+
+  /safe-buffer/5.1.2:
+    resolution: {integrity: sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==}
     dev: false
 
   /safe-buffer/5.2.1:

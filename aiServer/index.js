@@ -1,5 +1,6 @@
 const dbBuilder = require("@airplanegobrr/database")
 const express = require("express")
+const basicAuth = require('express-basic-auth');
 const bodyParser = require('body-parser')
 const hbs = require('express-hbs');
 const utils = require("../utils")
@@ -16,6 +17,12 @@ const cacheAPIbase = axios.create({
         "Content-Type": "application/json"
     }
 })
+
+const auth = basicAuth({
+    users: { 'admin': 'secret123' },
+    challenge: true,
+    realm: 'My Application'
+});
 
 async function e(){
     await logsDb.load()
@@ -244,6 +251,11 @@ app.get("/", async (req, res) => {
         count: Object.keys(await db.get("inLine")).length
     })
 })
+
+app.use('/admin', auth, (req, res) => {
+    // handle authenticated requests to /admin
+    res.send("Hello admin!", req.auth)
+});
 
 app.get("/info", async (req, res) => {
     // res.sendFile(__dirname + "/index.html")
