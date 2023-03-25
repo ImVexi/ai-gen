@@ -4,18 +4,13 @@ from PIL import ImageTk, Image
 import ai
 import threading
 from io import BytesIO
+import os
+import json
 # import win32clipboard
 
 ##############
 #   CONFIG   #
 ##############
-
-webhookURL = "https://discord.com/api/webhooks/1088824131761491989/8stLgAVgvyIqZhvv4LbcXaGQU4m6zjxvMsiCCctCDkB8tJ_fAAPC4XRLmcCa2Jw3lH3w"
-cpuMode = True
-uploadToDiscord = True
-upload = True
-saveFile = True
-copyright = True
 
 default_prompt = "Doge"
 default_negPrompt = "ugly, tiling, poorly drawn hands, poorly drawn feet, poorly drawn face, out of frame, extra limbs, disfigured, deformed, body out of frame, blurry, bad anatomy, blurred, watermark, grainy, signature, cut off, draft, purple dots"
@@ -24,18 +19,18 @@ default_imgs = 1
 default_height = 512
 default_width = 512
 
-##############
-#   CONFIG   #
-##############
+if not os.path.exists("config.json"):
+    print("Config.json not detected! Running config helper!")
+    import configHelper
 
-ai.config["isJobMode"] = False
-ai.config['cpuMode'] = cpuMode
-ai.config['uploadToDiscord'] = uploadToDiscord
-ai.config['upload'] = upload
-ai.config['saveFile'] = saveFile
-ai.config['copyright'] = copyright
-ai.config["webhook"] = webhookURL
-ai.config["copyrightMsg"] = "AI IMAGE, ©ai.airplanegobrr.xyz"
+config = None
+with open("config.json", "r") as f:
+    config = json.loads(f.read())
+    
+aiWorker = ai.doThing()
+
+aiWorker.config = config["config"]
+aiWorker.pipeConfig = config["pipeConfig"]
 
 # ai.config(cpuModei=cpuMode,uploadToDiscordi=uploadToDiscord, uploadi=upload,saveFilei=saveFile,copyrighti=copyright)
 
@@ -197,7 +192,7 @@ b2.grid(row = 1, column = 3, sticky = tk.W)
 c.grid(row = 1, column= 4, sticky=tk.W)
 
 # Configs
-config_values = ai.config
+config_values = aiWorker.config
 cpuB = tk.Button(root, text=f"Toggle CPU Mode: {config_values['cpuMode']}", command=lambda: toggle_attribute_value('cpuMode', cpuB))
 uploadB = tk.Button(root, text=f"Upload: {config_values['upload']}", command=lambda: toggle_attribute_value('upload', uploadB))
 uploadDB = tk.Button(root, text=f"Upload Discord: {config_values['uploadToDiscord']}", command=lambda: toggle_attribute_value('uploadToDiscord', uploadDB))
@@ -205,7 +200,7 @@ saveB = tk.Button(root, text=f"Save file: {config_values['saveFile']}", command=
 copyrightB = tk.Button(root, text=f"Copyright (pls leave on? :( )): {config_values['copyright']}", command=lambda: toggle_attribute_value('copyright', copyrightB))
 
 def toggle_attribute_value(attribute_name, button):
-    config_values = ai.config
+    config_values = aiWorker.config
     value = config_values[attribute_name]
     config_values[attribute_name] = not value
     new_text = f"{attribute_name.capitalize()}: {not value}"

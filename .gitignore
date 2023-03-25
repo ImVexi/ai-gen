@@ -112,3 +112,4 @@ cache
 aiServer/logs.json
 favs
 __pycache__
+aiGen/config.json
