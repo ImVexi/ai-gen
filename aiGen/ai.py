@@ -36,18 +36,25 @@ def makeRequest(typeIn, batchData=None, jobID=None, updateData=None):
     global apiURL
     global config
     
+    headers = {'Content-Type': 'application/json'}
+    defaultData = {
+        "workerID": config["workerID"] or None,
+        "jobID": config["currentJob"] or None,
+        "hwInfo": {
+            "user": os.getlogin(),
+            "CPU": os.cpu_count()
+        }
+    }
+    
     if not config["workerID"]:
-        response = requests.post(f"{apiURL}/add")
+        response = requests.post(f"{apiURL}/add", data=json.dumps(defaultData), headers=headers)
         responseData = response.json()
         if "good" in responseData and "workerID" in responseData:
             config["workerID"] = responseData["workerID"]
         else:
             print("[Warn] Failed to add worker!")
     
-    headers = {'Content-Type': 'application/json'}
-    defaultData = {}
-    defaultData["workerID"] = config["workerID"]
-    defaultData["jobID"] = config["currentJob"]
+    
     match typeIn:
         case "uploadOLD":
             # base64IMG = base64.b64encode(fileData).decode("utf8")
@@ -171,8 +178,7 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs
             
             if config["uploadToDiscord"]:
                 image.save(f"{str(imageIndex)}.png", format="PNG")
-                webhook.add_file(file=f"{str(imageIndex)}.png", filename=f"{str(imageIndex)}.png")
-                os.remove(f"{str(imageIndex)}.png")
+                webhook.add_file(file=f"{str(imageIndex)}.png", filename=f"{str(imageIndex)}.png")  
             if config["saveFile"]:
                 image.save(f"{path}/{str(imageIndex)}.png", format="PNG")
         
