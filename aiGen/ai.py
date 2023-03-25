@@ -175,6 +175,9 @@ def t2i(steps=50, jobID=None, model=None, prompt="Error", negPrompt="Error",imgs
             # Add the encoded image to the batch
             batch[imageIndex] = base64IMG
     
+    if config["uploadToDiscord"]:
+        webhook.execute()
+    
     if config["isJobMode"]:
         makeRequest("upload", batchData=batch, jobID=config["currentJob"])
         print(f"Submitted [{jobID}]")
