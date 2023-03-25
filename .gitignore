@@ -113,3 +113,5 @@ aiServer/logs.json
 favs
 __pycache__
 aiGen/config.json
+build
+gui.spec

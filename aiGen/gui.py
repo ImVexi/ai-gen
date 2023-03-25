@@ -91,7 +91,7 @@ def makeAI_T():
     currentStep = int(steps)
     print(prompt, negPrompt, steps, width, height)
     pt.configure(text=f"Loading...")
-    output = ai.t2i(prompt=prompt, negPrompt=negPrompt, height=height, width=width, steps=steps, imgs=imgCount, model="andite/anything-v4.0", progress=progress_function)
+    output = aiWorker.t2i(prompt=prompt, negPrompt=negPrompt, height=height, width=width, steps=steps, imgs=imgCount, model="andite/anything-v4.0", progress=progress_function)
     pt.configure(text=f"Done!")
     print(output)
     imgs = output["images"]
