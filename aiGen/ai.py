@@ -178,7 +178,7 @@ class doThing:
         batch = {}
         if self.config["uploadToDiscord"]:
             webhook = DiscordWebhook(
-                url=config["webhook"], content=f"Prompt: {prompt}\nNegprompt: {negPrompt}\nTime: {total}")
+                url=self.config["webhook"], content=f"Prompt: {prompt}\nNegprompt: {negPrompt}\nTime: {total}")
 
         path = None
 
